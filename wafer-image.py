@@ -1,4 +1,8 @@
 import matplotlib.pyplot as plt
+import pandas as pd
+
+# 데이터프레임 로드
+df = pd.read_pickle('LSWMD.pkl')
 
 # 보고 싶은 데이터의 인덱스 (예: 100번째 데이터)
 idx = 100
