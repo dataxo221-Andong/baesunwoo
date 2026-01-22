@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-pkl_path = 'LSWMD.pkl' 
+pkl_path = 'models/failure100.pkl'
 
 if not os.path.exists(pkl_path):
     print(f"[오류]: '{pkl_path}' 파일이 없습니다. 현재 폴더에 파일을 넣어주세요.")
@@ -26,14 +26,8 @@ df = pd.read_pickle(pkl_path)
 if 'waferIndex' in df.columns:
     df = df.drop(['waferIndex'], axis=1)
 
-df['failureType'] = df['failureType'].apply(lambda x: x if len(x) > 0 else [])
-df = df[df['failureType'].apply(lambda x: len(x) > 0)]
-
-# 리스트 껍질 벗겨서 문자열로 변환 ([[ 'Center' ]] -> 'Center')
-df['failureType'] = df['failureType'].apply(lambda x: x[0][0])
-
 # 9개 타겟 라벨 필터링
-target_labels = ['Center', 'Donut', 'Edge-Loc', 'Edge-Ring', 'Loc', 'Near-full', 'Random', 'Scratch', 'None']
+target_labels = ['CENTER', 'DONUT', 'EDGE-LOC', 'EDGE-RING', 'LOC', 'NEAR-FULL', 'RANDOM', 'SCRATCH', 'NONE']
 df = df[df['failureType'].isin(target_labels)].reset_index(drop=True)
 
 print(f"[완료]: 전처리 완료: 총 {len(df)}장의 유효한 웨이퍼 데이터 확보")
