@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 
+# 원본 데이터에 어떻게 불량이 저장되어 있는가?
 def main():
     pkl_path = 'models/failure100.pkl'
     

@@ -1,2 +1,3 @@
-wafer_classifier.pth
-LSWMD.pkl
+models/LSWMD.pkl
+models/ft_100.pkl
+matrix

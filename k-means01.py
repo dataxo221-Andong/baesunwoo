@@ -5,6 +5,7 @@ from torchvision import models
 from torch.utils.data import DataLoader, Dataset
 import numpy as np
 import pandas as pd
+
 import joblib
 from sklearn.cluster import KMeans
 import os
@@ -13,7 +14,7 @@ import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-pkl_path = 'models/failure100.pkl'
+pkl_path = 'models/ft_100.pkl'
 
 if not os.path.exists(pkl_path):
     print(f"[오류]: '{pkl_path}' 파일이 없습니다. 현재 폴더에 파일을 넣어주세요.")
@@ -32,7 +33,7 @@ df = df[df['failureType'].isin(target_labels)].reset_index(drop=True)
 
 print(f"[완료]: 전처리 완료: 총 {len(df)}장의 유효한 웨이퍼 데이터 확보")
 
-samples_per_class = 600  # 클래스별 600장씩만 샘플링
+samples_per_class = 100  # 클래스별 ~장씩만 샘플링
 balanced_df = pd.DataFrame()
 
 print(f"[진행]: 데이터 샘플링 진행 (유형별 {samples_per_class}장)...")
@@ -95,9 +96,9 @@ model = models.resnet18(pretrained=False) # 이미 학습된 파일을 쓸 것�
 model.conv1 = nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False)
 num_ftrs = model.fc.in_features
 model.fc = nn.Linear(num_ftrs, 9)
-
+    
 # 3) 저장된 가중치(wafer_classifier.pth) 로드
-model_path = 'wafer_classifier.pth'
+model_path = 'models/wafer_classifier_10.pth'
 if os.path.exists(model_path):
     try:
         model.load_state_dict(torch.load(model_path, map_location=device))
@@ -142,6 +143,13 @@ X_features = np.concatenate(features_list, axis=0)
 true_labels = np.concatenate(labels_list, axis=0)
 print(f"[완료]: 특징 추출 완료. 데이터 형태: {X_features.shape}")
 
+# 데이터 정규화 (StandardScaler 적용)
+# 특징값들의 평균을 0, 분산을 1로 맞춰서 K-Means가 거리를 더 잘 계산하게 함
+from sklearn.preprocessing import StandardScaler
+scaler = StandardScaler()
+X_features = scaler.fit_transform(X_features)
+print("[진행]: 특징 벡터 스케일링(StandardScaler) 완료")
+
 # ==========================================
 # 5. K-Means 군집화 수행
 # ==========================================
@@ -149,13 +157,14 @@ print(f"[완료]: 특징 추출 완료. 데이터 형태: {X_features.shape}")
 n_clusters = 9
 print(f"[진행]: K-Means 클러스터링 시작 (k={n_clusters})...")
 
-kmeans = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
+# n_init=50 유지 (안정적인 결과)
+kmeans = KMeans(n_clusters=n_clusters, random_state=42, n_init=50)
 kmeans.fit(X_features)
 
 print("[완료]: 군집화 완료!")
 
 # 모델 저장
-joblib.dump(kmeans, 'kmeans_model.pkl')
+joblib.dump(kmeans, 'models/kmeans_model.pkl')
 print("  [저장]: K-Means 모델 저장 완료: kmeans_model.pkl")
 
 # ==========================================
@@ -191,7 +200,7 @@ for i in range(n_clusters):
 # ==========================================
 print("[진행]: 결과 그래프 시각화(PCA) 진행 중...")
 
-# 512차원 특징 벡터 -> 2차원으로 압축
+# 벡터 -> 2차원으로 압축
 pca = PCA(n_components=2)
 pca_features = pca.fit_transform(X_features)
 
