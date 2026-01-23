@@ -12,12 +12,14 @@ GRID_SIZE = (32, 32)
 # 1. 패턴 생성 함수 (오류 수정 및 최적화)
 # ==========================================
 
-def gen_none(shape):
+def gen_none(shape, noise_range=(0, 3)):
     matrix = np.zeros(shape, dtype=np.uint8)
     h, w = shape
     
-    # [Fix] 튜플 연산 에러 수정 (shape[1]-1 -> w-1)
-    num_noise = random.randint(0, 3)
+    # 노이즈 개수 범위 외부에서 제어
+    low, high = noise_range
+    num_noise = random.randint(low, high)
+    
     for _ in range(num_noise):
         rx, ry = random.randint(0, w-1), random.randint(0, h-1)
         matrix[ry, rx] = 1
@@ -179,7 +181,14 @@ def insert_tsv_data():
             status = chip_data.get('die_status', 0)
             
             if status == 1: # 양품
-                target_matrix = gen_none(GRID_SIZE)
+                # [수정] 웨이퍼 실패 유형에 따라 양품 노이즈 차별화
+                # 패턴이 있는 웨이퍼의 양품은 주변 영향을 받아 노이즈가 조금 더 있을 수 있음 (2~5개)
+                if f_type != 'None':
+                    target_matrix = gen_none(GRID_SIZE, noise_range=(2, 5))
+                else:
+                    # 완전 깨끗한 웨이퍼의 양품은 노이즈 최소화 (0~3개)
+                    target_matrix = gen_none(GRID_SIZE, noise_range=(0, 3))
+                    
             elif status == 2: # 불량
                 generator = PATTERN_MAPPING.get(f_type)
                 if generator:
@@ -204,6 +213,10 @@ def insert_tsv_data():
         except Exception as e:
             print(f"Error processing {fpath}: {e}")
             continue
+
+        # 진행 상황 출력 (100개 단위)
+        if count % 100 == 0:
+            print(f"Processed {count}/{len(file_list)} chips...")
 
     print(f"Successfully processed {count} chips. Saved to '{output_dir}/'.")
 
