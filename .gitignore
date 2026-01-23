@@ -1,5 +1,6 @@
 models/LSWMD.pkl
 models/wafer_classifier.pth
+models/chip_dataset_4399.pkl
 matrix
 chip1step
 chipfin

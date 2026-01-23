@@ -24,7 +24,7 @@ def visualize_matrix(mat):
 
 def analyze_pkl_dataset():
     # 분석할 파일 경로 (사용자가 지정한 파일)
-    target_path = 'models/chip_dataset_260123_1017.pkl'
+    target_path = 'models/chip_dataset_4399.pkl'
     
     # 파일 존재 확인
     if not os.path.exists(target_path):
