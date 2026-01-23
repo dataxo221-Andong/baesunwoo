@@ -32,8 +32,10 @@ class WaferClassifier(nn.Module):
     def forward(self, x):
         return self.model(x)
 
-# WM-811K 데이터셋 라벨 (학습 시 사용된 라벨 순서와 대소문자가 정확해야 함)
-LABELS = ['CENTER', 'DONUT', 'EDGE-LOC', 'EDGE-RING', 'LOC', 'NEAR-FULL', 'RANDOM', 'SCRATCH', 'NONE']
+# WM-811K 데이터셋 라벨 (정식 명칭 표기법 준수)
+LABELS = ['Center', 'Donut', 'Edge-Loc', 'Edge-Ring', 'Loc', 'Near-full', 'Random', 'Scratch', 'None']
+# None 관련 변형들 (안전한 처리를 위한 매핑용)
+NONE_VARIANTS = {'none', 'None', 'NONE', '', '[]'}
 
 # ==========================================
 # 2. 유틸리티 함수
@@ -51,19 +53,24 @@ def load_model(model_path):
         # [수정] 1. 전체 모델 로드 시도
         loaded_obj = torch.load(model_path, map_location=device)
         
-        # 로드된 객체가 OrderedDict(state_dict)인지 확인
         if isinstance(loaded_obj, dict):
-            # state_dict라면 모델 아키텍처에 로드 (strict=False로 일부 키 불일치 허용)
-            if 'state_dict' in loaded_obj:
-                msg = model.load_state_dict(loaded_obj['state_dict'], strict=False)
-                print(f"[Info] State dict 로드 (strict=False): {msg}")
+            state_dict = loaded_obj['state_dict'] if 'state_dict' in loaded_obj else loaded_obj
+            
+            # 키 접두사 확인 (model. 으로 시작하는지?)
+            first_key = next(iter(state_dict.keys()))
+            
+            if not first_key.startswith('model.') and hasattr(model, 'model'):
+                # 접두사가 없으면 내부 ResNet(self.model)에 직접 로드
+                model.model.load_state_dict(state_dict, strict=False)
+                print("[Info] 내부 ResNet 모델에 가중치 로드 완료 (성공)")
             else:
-                msg = model.load_state_dict(loaded_obj, strict=False)
-                print(f"[Info] State dict 로드 (strict=False): {msg}")
+                # 접두사가 있으면 전체 모델에 로드
+                model.load_state_dict(state_dict, strict=False)
+                print("[Info] 전체 모델 가중치 로드 완료 (성공)")
+                
         else:
-            # 전체 모델 객체라면 그대로 사용 (단, 아키텍처 클래스 일치해야 함)
             model = loaded_obj
-            print("[Info] 전체 모델 로드 성공")
+            print("[Info] 전체 모델 객체 로드 완료")
             
     except Exception as e:
         print(f"[Error] 모델 로드 실패: {e}")
@@ -81,7 +88,8 @@ def predict_failure_type(model, image):
         return "Unknown"
 
     # (실제 학습 시 사용한 전처리와 동일해야 함)
-    img_resized = cv2.resize(image, (32, 32))
+    # [중요] 32x32로 줄일 때 픽셀 보존을 위해 INTER_NEAREST 사용
+    img_resized = cv2.resize(image, (32, 32), interpolation=cv2.INTER_NEAREST)
     
     # 만약 모델이 Grayscale 입력을 받는다면 채널 변환 필요
     # 모델 정의에서 1채널(Grayscale) 입력을 받도록 설정했으므로 그에 맞춤

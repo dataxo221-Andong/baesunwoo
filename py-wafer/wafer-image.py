@@ -14,7 +14,7 @@ if not os.path.exists(pkl_path):
 df = pd.read_pickle(pkl_path)
 
 # 보고 싶은 데이터의 인덱스
-idx = 61
+idx = 261
 
 # 2. 데이터 시각화
 wafer_array = df.iloc[idx]['waferMap']
