@@ -1,0 +1,93 @@
+/* Global Styles */
+body { 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    max-width: 900px; 
+    margin: 0 auto; 
+    padding: 40px 20px; 
+    background-color: #f4f6f9; 
+}
+
+.container { 
+    text-align: center; 
+}
+
+h1 { 
+    color: #2c3e50; 
+    margin-bottom: 10px; 
+}
+
+.subtitle { 
+    color: #7f8c8d; 
+    margin-bottom: 40px; 
+}
+
+/* Dashboard Grid Layout */
+.dashboard {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 30px;
+}
+
+/* Common Card Styles */
+.card {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+}
+
+/* Model Section (Full Width) */
+.model-section {
+    grid-column: 1 / -1; /* Full width */
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.model-section h3 { 
+    color: white; 
+}
+
+.model-section p { 
+    color: rgba(255,255,255,0.9); 
+}
+
+/* Card Content */
+.card-icon { 
+    font-size: 3em; 
+    margin-bottom: 15px; 
+}
+
+h3 { 
+    margin: 0 0 10px 0; 
+    color: #34495e; 
+}
+
+p { 
+    margin: 0; 
+    color: #7f8c8d; 
+    font-size: 0.95em; 
+}
+
+/* Buttons */
+.btn {
+    display: inline-block;
+    margin-top: 15px;
+    padding: 10px 20px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 20px;
+    font-size: 0.9em;
+}
