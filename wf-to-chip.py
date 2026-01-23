@@ -22,13 +22,13 @@ def process_single_wafer():
         print(f"Error loading file: {e}")
         return
 
-    # 테스트용: 첫 번째 웨이퍼만 선택
-    if len(df) == 0:
+    # 테스트용: 웨이퍼만 선택
+    if len(df) == 12:
         print("Empty dataframe.")
         return
 
-    # 첫 번째 행 가져오기
-    row_idx = 0
+    # 행 가져오기
+    row_idx = 12
     row = df.iloc[row_idx]
     
     # 웨이퍼 맵 가져오기
@@ -66,17 +66,18 @@ def process_single_wafer():
             if die_status == 1 or die_status == 2:
                 # 3. 칩 데이터 딕셔너리 생성 [원본 컬럼명 그대로 사용]
                 chip_data = {
+                    "chip_uid": f"{lot_name}X{x}Y{y}D{die_status}",
                     "tsv_matrix": np.zeros(chip_grid_size, dtype=int),
-                    "lotName": lot_name,           # parent_lot_name -> lotName
-                    "failureType": failure_type,   # parent_failure_type -> failureType
-                    "dieSize": die_size,           # parent_die_size -> dieSize
-                    "trianTestLabel": train_test_label, # parent_train_test_label -> trianTestLabel
+                    "lotName": lot_name,
+                    "failureType": failure_type,
+                    "dieSize": die_size,
+                    "trianTestLabel": train_test_label,
                     "tsv_coordinate": (x, y),
                     "die_status": int(die_status) # 1 or 2
                 }
                 
                 # 파일명 생성 규칙: [lotName]_[x좌표]_[y좌표]_[상태]
-                file_name = f"{lot_name}_{x}_{y}_{die_status}.npy"
+                file_name = f"{lot_name}X{x}Y{y}D{die_status}.npy"
                 file_path = os.path.join(output_dir, file_name)
                 
                 # 저장 (딕셔너리 객체 저장)

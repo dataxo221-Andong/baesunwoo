@@ -3,7 +3,7 @@ import os
 
 def analyze_chip_file():
     # 분석할 파일 경로
-    file_path = 'chip1step/lot42198_0_13_2.npy'
+    file_path = 'chip1step/lot36838X1Y17D2.npy'
 
     if not os.path.exists(file_path):
         print(f"[오류] 파일을 찾을 수 없습니다: {file_path}")
