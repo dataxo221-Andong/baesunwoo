@@ -146,6 +146,11 @@ def insert_tsv_data():
         print(f"Error: Directory '{INPUT_DIR}' not found.")
         return
 
+    # [수정] 출력용 폴더 생성 (chipfin)
+    output_dir = 'chipfin'
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
     file_list = glob.glob(os.path.join(INPUT_DIR, "*.npy"))
     print(f"Found {len(file_list)} chips. Start injecting patterns...")
     
@@ -183,20 +188,24 @@ def insert_tsv_data():
                     # 매핑 안 된 라벨은 Random 처리
                     target_matrix = gen_random(GRID_SIZE)
             
-            # 4. 데이터 주입 및 덮어쓰기
+            # 4. 데이터 주입 및 [수정] 새로운 경로에 저장
             if target_matrix is not None:
                 # [핵심] 기존 딕셔너리에 'tsv_matrix' 키만 새로 추가/갱신
                 chip_data['tsv_matrix'] = target_matrix
                 
-                # [핵심] 수정된 딕셔너리를 원본 경로에 그대로 덮어쓰기
-                np.save(fpath, chip_data)
+                # 파일명 유지
+                file_name = os.path.basename(fpath)
+                save_path = os.path.join(output_dir, file_name)
+                
+                # [수정] chipfin 폴더에 저장
+                np.save(save_path, chip_data)
                 count += 1
                 
         except Exception as e:
             print(f"Error processing {fpath}: {e}")
             continue
 
-    print(f"Successfully updated TSV patterns for {count} chips (Overwritten).")
+    print(f"Successfully processed {count} chips. Saved to '{output_dir}/'.")
 
 if __name__ == "__main__":
     insert_tsv_data()

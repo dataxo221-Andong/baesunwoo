@@ -2,4 +2,4 @@ models/LSWMD.pkl
 models/wafer_classifier.pth
 matrix
 chip1step
-chip2step
+chipfin

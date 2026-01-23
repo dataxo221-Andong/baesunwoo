@@ -3,7 +3,7 @@ import os
 
 def analyze_chip_file():
     # 분석할 파일 경로
-    file_path = 'chip1step/lot36838X1Y17D2.npy'
+    file_path = 'chipfin/lot17137X15Y12D2.npy'
 
     if not os.path.exists(file_path):
         print(f"[오류] 파일을 찾을 수 없습니다: {file_path}")
@@ -25,14 +25,29 @@ def analyze_chip_file():
         print("-" * 50)
         
         # 각 항목 상세 출력
+        # 시각화 함수
+        def visualize_matrix(mat):
+            h, w = mat.shape
+            print(f"  - Shape: {mat.shape}, Sum: {np.sum(mat)}")
+            print("  - Visualization:")
+            print("   " + "".join([str(i%10) for i in range(w)]))
+            print("   " + "-" * w)
+            for r in range(h):
+                row_str = ""
+                for c in range(w):
+                    val = mat[r, c]
+                    # 값이 0이면 공백/점, 1이면 특수문자
+                    char = "■" if val > 0 else "."
+                    row_str += char
+                print(f"{r:2d}|{row_str}|")
+            print("   " + "-" * w)
+
+        # 각 항목 상세 출력
         for key, value in chip_data.items():
-            if key == 'matrix':
+            # 행렬 데이터인 경우 시각화
+            if isinstance(value, np.ndarray) and value.ndim == 2:
                 print(f"[{key}]")
-                print(f"  - Shape: {value.shape}")
-                print(f"  - Dtype: {value.dtype}")
-                # 내용이 모두 0인지 확인 (초기화 상태 점검)
-                print(f"  - Sum: {np.sum(value)}")
-                print(f"  - Preview:\n{value}")
+                visualize_matrix(value)
             else:
                 print(f"[{key}]: {value}")
                 

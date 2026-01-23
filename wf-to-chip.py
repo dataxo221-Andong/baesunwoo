@@ -23,12 +23,12 @@ def process_single_wafer():
         return
 
     # 테스트용: 웨이퍼만 선택
-    if len(df) == 12:
+    if len(df) == 135:
         print("Empty dataframe.")
         return
 
     # 행 가져오기
-    row_idx = 12
+    row_idx = 135
     row = df.iloc[row_idx]
     
     # 웨이퍼 맵 가져오기
@@ -42,7 +42,16 @@ def process_single_wafer():
     die_size = row['dieSize']
     train_test_label = row['trianTestLabel']
     
-    # Wafer ID 대신 Lot Name 사용
+    # [수정] failureType 정제 (임시 리스트/배열 -> 문자열)
+    if isinstance(failure_type, (list, np.ndarray)):
+        if len(failure_type) == 0:
+            failure_type = 'None'
+        else:
+            # 요소가 있으면 첫 번째거 추출 (재귀적으로는 안하고 1단계만)
+            failure_type = str(failure_type[0][0]) if (isinstance(failure_type[0], (list, np.ndarray))) else str(failure_type[0])
+    
+    # 한번 더 문자열 정리
+    failure_type = str(failure_type).strip()
     print(f"Processing Lot: {lot_name} (Type: {failure_type})...")
 
     # 1. 32x32로 리사이즈 (Nearest Neighbor로 값 변질 방지)
