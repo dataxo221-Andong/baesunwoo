@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Wafer Information</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .split-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .panel {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: left;
+        }
+
+        .panel h3 {
+            margin-top: 0;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 10px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #f8fafc;
+        }
+
+        .info-label {
+            color: #64748b;
+            font-weight: bold;
+        }
+
+        .info-value {
+            color: #334155;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Wafer Detailed Info</h1>
+        <p class="subtitle">웨이퍼 심층 분석 및 메타데이터 확인</p>
+
+        <!-- 임시 안내 문구 -->
+        <div class="card sub-card" style="justify-content: center; background: #fffacd; border: 1px solid #fde047;">
+            <p style="color: #b45309;">🚧 기능 구현 준비 중입니다.</p>
+        </div>
+
+        <div class="split-container">
+            <!-- 왼쪽: 이미지 (예시) -->
+            <div class="panel">
+                <h3>Wafer Map</h3>
+                <div
+                    style="background: #e2e8f0; height: 300px; display: flex; align-items: center; justify-content: center; border-radius: 8px;">
+                    <span style="color: #94a3b8;">Image Placeholder</span>
+                </div>
+            </div>
+
+            <!-- 오른쪽: 정보 박스 -->
+            <div class="panel">
+                <h3>Metadata</h3>
+                <div class="info-row">
+                    <span class="info-label">Lot ID</span>
+                    <span class="info-value">250123XD7B9C</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Wafer Index</span>
+                    <span class="info-value">#14</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Die Size</span>
+                    <span class="info-value">16384 (128x128)</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Failure Prediction</span>
+                    <span class="info-value" style="color: #ef4444; font-weight: bold;">Loc</span>
+                </div>
+            </div>
+        </div>
+
+        <a href="/main" class="btn" style="margin-top: 30px; text-decoration: none; color: white;">← Back to Main</a>
+    </div>
+</body>
+
+</html>

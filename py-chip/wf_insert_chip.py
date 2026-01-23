@@ -48,24 +48,27 @@ def load_model(model_path):
         return None
 
     try:
-        # 1. 전체 모델 로드 시도
-        model = torch.load(model_path, map_location=device)
-        print("[Info] 전체 모델 로드 성공")
-    except:
-        try:
-            # 2. state_dict 로드 시도
-            ckpt = torch.load(model_path, map_location=device)
-            # 만약 ckpt가 딕셔너리고 'state_dict' 키를 가진다면
-            if isinstance(ckpt, dict) and 'state_dict' in ckpt:
-                model.load_state_dict(ckpt['state_dict'])
+        # [수정] 1. 전체 모델 로드 시도
+        loaded_obj = torch.load(model_path, map_location=device)
+        
+        # 로드된 객체가 OrderedDict(state_dict)인지 확인
+        if isinstance(loaded_obj, dict):
+            # state_dict라면 모델 아키텍처에 로드 (strict=False로 일부 키 불일치 허용)
+            if 'state_dict' in loaded_obj:
+                msg = model.load_state_dict(loaded_obj['state_dict'], strict=False)
+                print(f"[Info] State dict 로드 (strict=False): {msg}")
             else:
-                model.load_state_dict(ckpt)
-            print("[Info] State dict 로드 성공")
-        except Exception as e:
-            print(f"[Error] 모델 로드 실패: {e}")
-            print("  -> 모델 클래스 정의가 pth 파일과 일치하지 않을 수 있습니다.")
-            return None
+                msg = model.load_state_dict(loaded_obj, strict=False)
+                print(f"[Info] State dict 로드 (strict=False): {msg}")
+        else:
+            # 전체 모델 객체라면 그대로 사용 (단, 아키텍처 클래스 일치해야 함)
+            model = loaded_obj
+            print("[Info] 전체 모델 로드 성공")
             
+    except Exception as e:
+        print(f"[Error] 모델 로드 실패: {e}")
+        return None
+        
     model.to(device)
     model.eval()
     return model
@@ -77,9 +80,8 @@ def predict_failure_type(model, image):
     if model is None:
         return "Unknown"
 
-    # 전처리: 224x224 리사이즈, 정규화, 텐서 변환
     # (실제 학습 시 사용한 전처리와 동일해야 함)
-    img_resized = cv2.resize(image, (224, 224))
+    img_resized = cv2.resize(image, (32, 32))
     
     # 만약 모델이 Grayscale 입력을 받는다면 채널 변환 필요
     # 모델 정의에서 1채널(Grayscale) 입력을 받도록 설정했으므로 그에 맞춤
@@ -156,8 +158,20 @@ def process_wafer_image(image_path, output_dir='chip_upload'):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
         
-    # 5. 메타데이터 생성 (업로드된 파일이라 정보가 없으므로 생성)
-    lot_name = f"Upload_{datetime.datetime.now().strftime('%y%m%d_%H%M%S')}"
+    # 5. 메타데이터 생성
+    # [수정] lotName 포맷: [년월일][랜덤6자리][시분]
+    import string
+    
+    now = datetime.datetime.now()
+    yymmdd = now.strftime('%y%m%d')
+    hhmm = now.strftime('%H%M')
+    
+    # 랜덤 6자리 (알파벳 대문자 + 숫자)
+    chars = string.ascii_uppercase + string.digits
+    random_serial = ''.join(random.choices(chars, k=6))
+    
+    lot_name = f"{yymmdd}{random_serial}{hhmm}"
+    
     die_size = float(target_size[0] * target_size[1]) # 임의값
     train_test_label = [] # 정보 없음
 

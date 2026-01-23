@@ -1,22 +1,41 @@
 import matplotlib.pyplot as plt
 import pandas as pd
+import os
+from datetime import datetime
 
-# 데이터프레임 로드
-df = pd.read_pickle('models/LSWMD.pkl')
+# 1. 데이터 로드 (절대 경로 변환으로 오류 방지)
+current_dir = os.path.dirname(os.path.abspath(__file__))
+pkl_path = os.path.join(current_dir, '../models/ft_100.pkl')
 
-# 보고 싶은 데이터의 인덱스 (예: 100번째 데이터)
-idx = 460
+if not os.path.exists(pkl_path):
+    print(f"[Error] File not found: {pkl_path}")
+    exit(1)
 
-# 1. 데이터 꺼내기 (숫자 행렬)
+df = pd.read_pickle(pkl_path)
+
+# 보고 싶은 데이터의 인덱스
+idx = 61
+
+# 2. 데이터 시각화
 wafer_array = df.iloc[idx]['waferMap']
 label = df.iloc[idx]['failureType']
 
-# 2. 그림 그리기
 plt.figure(figsize=(5, 5))
-plt.imshow(wafer_array, cmap='inferno') # cmap은 색상 테마 (viridis, gray 등 변경 가능)
-plt.title(f"Label: {label}")
-plt.colorbar()
+plt.imshow(wafer_array, cmap='inferno')
+# 타이틀, 축, 컬러바 제거 -> 순수 이미지만 저장
+plt.axis('off')
 
-# 웨이퍼 시각화를 이미지로 저장
-plt.savefig('image/wafer_image.png')
+# 3. 이미지 저장
+# 저장 경로: py-flask/static/image
+save_dir = os.path.join(current_dir, '../py-flask/static/image')
+os.makedirs(save_dir, exist_ok=True)
+
+# [수정] f-string 적용
+file_name = f'wafer_image_{datetime.now().strftime("%Y%m%d_%H%M%S")}.png'
+save_path = os.path.join(save_dir, file_name)
+
+# 여백 없이 꽉 채워서 저장
+plt.savefig(save_path, bbox_inches='tight', pad_inches=0)
+print(f"Image saved to: {save_path}")
+
 plt.show()
