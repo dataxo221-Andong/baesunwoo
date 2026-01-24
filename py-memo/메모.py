@@ -11,6 +11,7 @@ wafer_data = [
     defectCount,      # 불량 칩 개수
     defectDensity,    # 불량 밀도 (불량 칩 개수/전체 칩 개수)
     totalGrade,       # 전체 등급 (A, B, C, D, F)
+    # 전체 등급은 waferSize, dieCount, defectCount, defectDensity에 따라 결정
     created_at        # 생성일 (DB Insert Time)
 ]
 

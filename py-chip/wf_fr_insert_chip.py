@@ -124,6 +124,8 @@ def process_wafer_image(image_path, output_dir='chip_upload'):
     model_path = os.path.join(os.path.dirname(__file__), '../models/wafer_classifier.pth')
     target_size = (32, 32)
     chip_grid_size = (32, 32)
+    die_size = float(target_size[0] * target_size[1]) # Die Size Calculation
+    train_test_label = [] # Default label list
     
     if not os.path.exists(image_path):
         print(f"[Error] 이미지를 찾을 수 없습니다: {image_path}")
@@ -204,46 +206,56 @@ def process_wafer_image(image_path, output_dir='chip_upload'):
         os.makedirs(output_dir)
 
     # 칩 추출 및 저장 (샘플링)
-    # 메모 구조 반영: 중복 정보 제거, lotName FK 포함
+    # wf_insert_chip.py의 로직 복원: Normal/Fail 각각 25개씩 추출 시도
     
     coords = [(y, x) for y in range(rows) for x in range(cols) if quantized_map[y, x] > 0]
     random.shuffle(coords)
     
     saved_count = 0
-    TARGET_COUNT = 25 # 예시 제한
-    
-    # 웨이퍼 메타데이터 저장 (옵션: JSON 파일로 저장하거나 DB 연동 시 이 딕셔너리 사용)
-    # 여기서는 편의상 칩과 같은 폴더에 wafer_meta 확인용으로 저장
-    # meta_path = os.path.join(output_dir, f"wafer_meta_{lot_name}.npy")
-    # np.save(meta_path, wafer_data) 
+    count_normal = 0
+    count_failure = 0
+    TARGET_PER_TYPE = 25
     
     chip_files_created = []
 
     for y, x in coords:
-        if saved_count >= TARGET_COUNT:
+        if count_normal >= TARGET_PER_TYPE and count_failure >= TARGET_PER_TYPE:
             break
             
         tsv_status = quantized_map[y, x] # 1(정상) or 2(불량)
+        is_target = False
         
-        # 칩 데이터 구조 (메모 반영)
-        chip_info = {
-            "chip_uid": f"{lot_name}X{x}Y{y}D{tsv_status}",
-            "lotName": lot_name,            # [핵심] FK
-            "tsv_matrix": np.zeros(chip_grid_size, dtype=int), # 실제 TSV 데이터라면 여기에 값 채움
-            "tsv_coordinate": (x, y),
-            "tsv_status": int(tsv_status),  # die_status -> tsv_status
-            "created_at": now.isoformat()
-        }
-        
-        file_name = f"{lot_name}X{x}Y{y}D{tsv_status}.npy"
-        file_path = os.path.join(output_dir, file_name)
-        np.save(file_path, chip_info)
-        chip_files_created.append(file_name)
-        saved_count += 1
+        if tsv_status == 1:
+            if count_normal < TARGET_PER_TYPE:
+                count_normal += 1
+                is_target = True
+        elif tsv_status == 2:
+            if count_failure < TARGET_PER_TYPE:
+                count_failure += 1
+                is_target = True
+
+        if is_target:
+            # 칩 데이터 구조 (메모 반영 + 기존 항목 복원)
+            chip_info = {
+                "chip_uid": f"{lot_name}X{x}Y{y}D{tsv_status}",
+                "lotName": lot_name,            
+                "tsv_matrix": np.zeros(chip_grid_size, dtype=int), # Placeholder
+                "tsv_coordinate": (x, y),
+                "tsv_status": int(tsv_status),
+                "dieSize": die_size,
+                "trainTestLabel": train_test_label,
+                "created_at": now.isoformat()
+            }
+            
+            file_name = f"{lot_name}X{x}Y{y}D{tsv_status}.npy"
+            file_path = os.path.join(output_dir, file_name)
+            np.save(file_path, chip_info)
+            chip_files_created.append(file_name)
+            saved_count += 1
 
     print(f"[Done] '{lot_name}' 웨이퍼 처리 완료.")
     print(f"       웨이퍼 등급: {total_grade} (불량률 {defect_density*100:.1f}%)")
-    print(f"       생성된 칩 파일: {saved_count}개")
+    print(f"       생성된 칩 파일: {saved_count}개 (Normal:{count_normal}, Fail:{count_failure})")
     
     return wafer_data, chip_files_created
 
