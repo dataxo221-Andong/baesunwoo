@@ -136,7 +136,7 @@
             const formData = new FormData();
             formData.append('wafer_image', file);
 
-            fetch('/wafer/classify', {
+            fetch('wafer/classify', {
                 method: 'POST',
                 body: formData
             })
