@@ -27,7 +27,7 @@ plt.axis('off')
 
 # 3. 이미지 저장
 # 저장 경로: py-flask/static/image
-save_dir = os.path.join(current_dir, '../py-flask/static/image')
+save_dir = os.path.join(current_dir, '../')
 os.makedirs(save_dir, exist_ok=True)
 
 # [수정] f-string 적용
